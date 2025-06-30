@@ -34,7 +34,29 @@ class FoodCard extends StatelessWidget {
             child: Container(
               height: 200,
               width: double.infinity,
-              child: _buildFoodImage(),
+              child: food.image != null
+                  ? Image.network(
+                food.image,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Colors.grey[300],
+                    child: Icon(
+                      Icons.fastfood,
+                      size: 50,
+                      color: Colors.grey[600],
+                    ),
+                  );
+                },
+              )
+                  : Container(
+                color: Colors.grey[300],
+                child: Icon(
+                  Icons.fastfood,
+                  size: 50,
+                  color: Colors.grey[600],
+                ),
+              ),
             ),
           ),
 
@@ -48,7 +70,7 @@ class FoodCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        _getFoodName(),
+                        food.name ?? 'Unknown Food',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -62,7 +84,7 @@ class FoodCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        '\$${_getFoodPrice()}',
+                        '\$${food.price?.toStringAsFixed(2) ?? '0.00'}',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -75,9 +97,9 @@ class FoodCard extends StatelessWidget {
 
                 SizedBox(height: 8),
 
-                if (_getFoodDescription() != null)
+                if (food.description != null)
                   Text(
-                    _getFoodDescription()!,
+                    food.description,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[600],
@@ -112,114 +134,5 @@ class FoodCard extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Widget _buildFoodImage() {
-    String? imageUrl = _getFoodImageUrl();
-
-    if (imageUrl != null && imageUrl.isNotEmpty) {
-      return Image.network(
-        imageUrl,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: Colors.grey[300],
-            child: Icon(
-              Icons.fastfood,
-              size: 50,
-              color: Colors.grey[600],
-            ),
-          );
-        },
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Container(
-            color: Colors.grey[300],
-            child: Center(
-              child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded /
-                    loadingProgress.expectedTotalBytes!
-                    : null,
-              ),
-            ),
-          );
-        },
-      );
-    } else {
-      return Container(
-        color: Colors.grey[300],
-        child: Icon(
-          Icons.fastfood,
-          size: 50,
-          color: Colors.grey[600],
-        ),
-      );
-    }
-  }
-
-  String? _getFoodImageUrl() {
-    // Try different possible property names for image
-    try {
-      if (food.image != null) return food.image;
-    } catch (e) {}
-
-    try {
-      if (food.imageUrl != null) return food.imageUrl;
-    } catch (e) {}
-
-    try {
-      if (food.photo != null) return food.photo;
-    } catch (e) {}
-
-    try {
-      if (food.picture != null) return food.picture;
-    } catch (e) {}
-
-    return null;
-  }
-
-  String _getFoodName() {
-    try {
-      return food.name ?? 'Unknown Food';
-    } catch (e) {
-      try {
-        return food.title ?? 'Unknown Food';
-      } catch (e) {
-        return 'Unknown Food';
-      }
-    }
-  }
-
-  String _getFoodPrice() {
-    try {
-      if (food.price != null) {
-        return food.price.toStringAsFixed(2);
-      }
-    } catch (e) {}
-
-    try {
-      if (food.cost != null) {
-        return food.cost.toStringAsFixed(2);
-      }
-    } catch (e) {}
-
-    return '0.00';
-  }
-
-  String? _getFoodDescription() {
-    try {
-      return food.description;
-    } catch (e) {
-      try {
-        return food.desc;
-      } catch (e) {
-        try {
-          return food.details;
-        } catch (e) {
-          return null;
-        }
-      }
-    }
   }
 }

@@ -6,6 +6,9 @@ import 'package:food_app/theme/app_theme.dart';
 import 'package:food_app/theme/theme_service.dart';
 import 'package:food_app/controllers/auth_controller.dart';
 
+import 'controllers/cart_controller.dart';
+import 'controllers/dashboard_controller.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
@@ -27,6 +30,9 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
+    // Initialize controllers
+    Get.put(DashboardController(), permanent: true);
+    Get.put(CartController(), permanent: true); // Add this line
     return GetMaterialApp(
       title: 'Food App',
       debugShowCheckedModeBanner: false,

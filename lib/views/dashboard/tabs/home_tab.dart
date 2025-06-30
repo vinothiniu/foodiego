@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:food_app/controllers/dashboard_controller.dart';
+import 'package:food_app/controllers/cart_controller.dart';
 import 'package:food_app/views/dashboard/components/category_list.dart';
 import 'package:food_app/views/dashboard/components/food_card.dart';
+import 'package:food_app/views/cart/cart_screen.dart';
 
 class HomeTab extends StatelessWidget {
   const HomeTab({Key? key}) : super(key: key);
@@ -10,6 +12,7 @@ class HomeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<DashboardController>();
+    final cartController = Get.put(CartController());
 
     return RefreshIndicator(
       onRefresh: controller.fetchFoods,
@@ -64,6 +67,57 @@ class HomeTab extends StatelessWidget {
                           child: Icon(
                             Icons.search,
                             color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        SizedBox(width: 10),
+                        // Cart Icon with Badge
+                        GestureDetector(
+                          onTap: () => Get.to(() => CartScreen()),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.grey[800]
+                                  : Colors.grey[200],
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            padding: EdgeInsets.all(10),
+                            child: Stack(
+                              children: [
+                                Icon(
+                                  Icons.shopping_cart,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                Obx(() {
+                                  if (cartController.itemCount > 0) {
+                                    return Positioned(
+                                      right: -2,
+                                      top: -2,
+                                      child: Container(
+                                        padding: EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.red,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        constraints: BoxConstraints(
+                                          minWidth: 16,
+                                          minHeight: 16,
+                                        ),
+                                        child: Text(
+                                          '${cartController.itemCount}',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  return SizedBox.shrink();
+                                }),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -122,8 +176,11 @@ class HomeTab extends StatelessWidget {
                     (context, index) {
                   final food = filteredFoods[index];
                   return Hero(
-                    tag: 'food_${food.id}',
-                    child: FoodCard(food: food),
+                    tag: 'food_${_getFoodId(food)}',
+                    child: FoodCard(
+                      food: food,
+                      onAddToCart: () => cartController.addToCart(food),
+                    ),
                   );
                 },
                 childCount: filteredFoods.length,
@@ -138,5 +195,18 @@ class HomeTab extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  // Helper method to safely get food ID
+  String _getFoodId(dynamic food) {
+    try {
+      return food.id?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString();
+    } catch (e) {
+      try {
+        return food.foodId?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString();
+      } catch (e) {
+        return DateTime.now().millisecondsSinceEpoch.toString();
+      }
+    }
   }
 }
